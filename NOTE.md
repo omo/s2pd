@@ -5,6 +5,7 @@
  * DONE: Making all redirect MVP
  * Making some pass-through
  * Caching
+ * Cache reset UI
  * Restart mode
 
 ----
