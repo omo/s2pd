@@ -17,7 +17,6 @@ type MainHandler struct {
 }
 
 func (self *MainHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	if r.URL.Path == "/clear" {
 		if r.Method == "GET" {
 			w.WriteHeader(200)
@@ -33,6 +32,7 @@ func (self *MainHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 
+		LogAccessMisc(r.URL)
 		return
 	}
 
@@ -41,6 +41,7 @@ func (self *MainHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		self.direct.ServeHTTP(w, r, pair.Stored)
 	} else {
 		http.Redirect(w, r, pair.Front.String(), http.StatusMovedPermanently)
+		LogAccessRedirect(r.URL, pair.Front)
 	}
 }
 

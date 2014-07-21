@@ -31,6 +31,7 @@ type DirectServerResponse struct {
 	statusCode int
 	head       http.Header
 	body       []byte
+	hit        bool
 }
 
 func (self *DirectServer) get(url *url.URL) (*DirectServerResponse, error) {
@@ -40,6 +41,7 @@ func (self *DirectServer) get(url *url.URL) (*DirectServerResponse, error) {
 			statusCode: 200,
 			head:       cached.Head,
 			body:       cached.Body,
+			hit:        true,
 		}, nil
 	}
 
@@ -62,12 +64,22 @@ func (self *DirectServer) get(url *url.URL) (*DirectServerResponse, error) {
 		statusCode: resp.StatusCode,
 		body:       bytes,
 		head:       resp.Header,
+		hit:        false,
 	}, nil
+}
+
+func (self *DirectServerResponse) Note() string {
+	if self.hit {
+		return "HIT"
+	}
+
+	return "MISS"
 }
 
 func (self *DirectServer) ServeHTTP(w http.ResponseWriter, r *http.Request, url *url.URL) {
 	resp, err := self.get(url)
 	if err != nil {
+		LogAccessError(r.URL, err)
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -84,11 +96,13 @@ func (self *DirectServer) ServeHTTP(w http.ResponseWriter, r *http.Request, url 
 	last := resp.head.Get("Last-Modified")
 	if 0 < len(last) && since == last && resp.statusCode == 200 {
 		w.WriteHeader(http.StatusNotModified)
+		LogAccessOK(r.URL, http.StatusNotModified, resp)
 		return
 	}
 
 	w.WriteHeader(resp.statusCode)
 	w.Write(resp.body)
+	LogAccessOK(r.URL, resp.statusCode, resp)
 }
 
 func MakeDirectServer(cacher *Cacher) *DirectServer {
