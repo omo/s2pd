@@ -24,7 +24,7 @@ func TestHelloCacher(t *testing.T) {
 	target.AskSet(u, to_cache)
 	Expect(string((<-target.AskGet(u)).Body), bodyText, t)
 
-	target.AskReet()
+	target.AskReset()
 	ExpectTrue(nil == (<-target.AskGet(u)), "AskReset", t)
 }
 

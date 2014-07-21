@@ -38,7 +38,7 @@ func (self *Cacher) AskSet(url *url.URL, entry *CacheEntry) {
 	self.requestChan <- &CacherSet{url: url, entry: entry}
 }
 
-func (self *Cacher) AskReet() {
+func (self *Cacher) AskReset() {
 	self.requestChan <- &CacherReset{}
 }
 
