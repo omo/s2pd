@@ -21,7 +21,7 @@ type DirectServer struct {
 	cacher *Cacher
 }
 
-var servingPattern = regexp.MustCompile("(/$)|(\\.html$)|(\\.rdf$)|(\\.xml$)")
+var servingPattern = regexp.MustCompile("(/$)|(\\.html$)|(\\.rdf$)|(\\.xml$)|(\\.css$)|(\\.js$)")
 
 func (self *DirectServer) ShouldServe(url *url.URL) bool {
 	return nil != url && servingPattern.MatchString(url.Path)

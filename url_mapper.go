@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type URLPair struct {
+type URLMapping struct {
 	Front  *url.URL
 	Stored *url.URL
 }
@@ -16,15 +16,15 @@ type URLPair struct {
 // --- URLMappter ---
 
 type URLMapper struct {
-	Frontend     string
-	LivingStore  string
-	ArchiteStore string
+	Frontend     *url.URL
+	LivingStore  *url.URL
+	ArchiteStore *url.URL
 }
 
-func (self *URLMapper) mapWithSamePathAt(url *url.URL, host string) *url.URL {
+func (self *URLMapper) mapWithSamePathAt(url *url.URL, host *url.URL) *url.URL {
 	urlToReturn := *url
-	urlToReturn.Host = host
-	urlToReturn.Scheme = "http"
+	urlToReturn.Host = host.Host
+	urlToReturn.Scheme = host.Scheme
 	return &urlToReturn
 }
 
@@ -42,8 +42,8 @@ func (self *URLMapper) mapToFrontend(url *url.URL) *url.URL {
 
 func (self *URLMapper) mapToLivingStoreAtom() *url.URL {
 	return &url.URL{
-		Scheme: "http",
-		Host:   self.LivingStore,
+		Scheme: self.LivingStore.Scheme,
+		Host:   self.LivingStore.Host,
 		Path:   "/atom.xml",
 	}
 }
@@ -55,14 +55,14 @@ var dateQueryPattern = regexp.MustCompile("([[:digit:]]{4})([[:digit:]]{2})([[:d
 // - RSS for backnumbers (There is nothing new coming)
 // - Assets for tDiary (We support only linked pages and old RSS readers.)
 //
-func (self *URLMapper) MapToURLPair(req *http.Request) URLPair {
+func (self *URLMapper) GetMapping(req *http.Request) URLMapping {
 	front, can_be_stored := self.GetFront(req)
 	if !can_be_stored {
-		return URLPair{Front: front, Stored: nil}
+		return URLMapping{Front: front, Stored: nil}
 	}
 
 	stored := self.GetStored(front)
-	return URLPair{Front: front, Stored: stored}
+	return URLMapping{Front: front, Stored: stored}
 }
 
 func (self *URLMapper) GetFront(req *http.Request) (*url.URL, bool) {
@@ -77,8 +77,8 @@ func (self *URLMapper) GetFront(req *http.Request) (*url.URL, bool) {
 
 		path := fmt.Sprintf("/bn/%s/%s/%s/", dateMatches[1], dateMatches[2], dateMatches[3])
 		return &url.URL{
-			Scheme: "http",
-			Host:   self.Frontend,
+			Scheme: self.Frontend.Scheme,
+			Host:   self.Frontend.Host,
 			Path:   path,
 		}, false
 	}

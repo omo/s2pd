@@ -5,9 +5,10 @@
  * DONE: Making all redirect MVP
  * DONE: Making some pass-through
  * DONE: Caching
- * Support if-modified-since
- * Cache reset UI
- * Serve and cache CSS as well.
+ * DONE: Support if-modified-since
+ * DONE: Cache reset UI
+ * DONE: Serve and cache CSS as well.
+ * Flag for change the host name
  * Restart mode
 
 ----
