@@ -3,9 +3,11 @@
 # TODO
 
  * DONE: Making all redirect MVP
- * Making some pass-through
- * Caching
+ * DONE: Making some pass-through
+ * DONE: Caching
+ * Support if-modified-since
  * Cache reset UI
+ * Serve and cache CSS as well.
  * Restart mode
 
 ----

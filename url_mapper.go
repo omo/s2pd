@@ -8,11 +8,17 @@ import (
 	"strings"
 )
 
+type URLPair struct {
+	Front  *url.URL
+	Stored *url.URL
+}
+
 // --- URLMappter ---
 
 type URLMapper struct {
-	LivingSite  string
-	ArchiveSite string
+	Frontend     string
+	LivingStore  string
+	ArchiteStore string
 }
 
 func (self *URLMapper) mapWithSamePathAt(url *url.URL, host string) *url.URL {
@@ -22,18 +28,22 @@ func (self *URLMapper) mapWithSamePathAt(url *url.URL, host string) *url.URL {
 	return &urlToReturn
 }
 
-func (self *URLMapper) mapToLivingSite(url *url.URL) *url.URL {
-	return self.mapWithSamePathAt(url, self.LivingSite)
+func (self *URLMapper) mapToLivingStore(url *url.URL) *url.URL {
+	return self.mapWithSamePathAt(url, self.LivingStore)
 }
 
-func (self *URLMapper) mapToArchiveSite(url *url.URL) *url.URL {
-	return self.mapWithSamePathAt(url, self.ArchiveSite)
+func (self *URLMapper) mapToArchiteStore(url *url.URL) *url.URL {
+	return self.mapWithSamePathAt(url, self.ArchiteStore)
 }
 
-func (self *URLMapper) mapToLivingSiteAtom() *url.URL {
+func (self *URLMapper) mapToFrontend(url *url.URL) *url.URL {
+	return self.mapWithSamePathAt(url, self.Frontend)
+}
+
+func (self *URLMapper) mapToLivingStoreAtom() *url.URL {
 	return &url.URL{
 		Scheme: "http",
-		Host:   self.LivingSite,
+		Host:   self.LivingStore,
 		Path:   "/atom.xml",
 	}
 }
@@ -45,40 +55,56 @@ var dateQueryPattern = regexp.MustCompile("([[:digit:]]{4})([[:digit:]]{2})([[:d
 // - RSS for backnumbers (There is nothing new coming)
 // - Assets for tDiary (We support only linked pages and old RSS readers.)
 //
-func (self *URLMapper) MapToURL(req *http.Request) *url.URL {
-	// Asset and HTML files for backnumbers
-	if 0 == strings.Index(req.URL.Path, "/bn/") {
-		return self.mapToArchiveSite(req.URL)
+func (self *URLMapper) MapToURLPair(req *http.Request) URLPair {
+	front, can_be_stored := self.GetFront(req)
+	if !can_be_stored {
+		return URLPair{Front: front, Stored: nil}
 	}
 
-	// HTML files for current blogs
-	if 0 == strings.Index(req.URL.Path, "/b/") {
-		return self.mapToLivingSite(req.URL)
-	}
+	stored := self.GetStored(front)
+	return URLPair{Front: front, Stored: stored}
+}
 
-	// RSS for tDiary
-	if req.URL.Path == "/index.rdf" || req.URL.Path == "/no_comments.rdf" {
-		return self.mapToLivingSiteAtom()
-	}
-
+func (self *URLMapper) GetFront(req *http.Request) (*url.URL, bool) {
 	// HTML for tDiary
 	values := req.URL.Query()
 	date, hasDate := values["date"]
 	if hasDate {
 		dateMatches := dateQueryPattern.FindStringSubmatch(date[0])
 		if nil == dateMatches {
-			// This isn't expected. Fallback.
-			return self.mapToLivingSite(req.URL)
+			return self.mapToFrontend(req.URL), true
 		}
 
-		path := fmt.Sprintf("/%s/%s/%s/", dateMatches[1], dateMatches[2], dateMatches[3])
+		path := fmt.Sprintf("/bn/%s/%s/%s/", dateMatches[1], dateMatches[2], dateMatches[3])
 		return &url.URL{
 			Scheme: "http",
-			Host:   self.ArchiveSite,
+			Host:   self.Frontend,
 			Path:   path,
-		}
+		}, false
 	}
 
-	// Anything else. Probably Assets and Atom for current blogs.
-	return self.mapToLivingSite(req.URL)
+	// Anything else. Probably They are:
+	// - Assets and Atom for current blogs or
+	// - Some non-article pages.
+	return self.mapToFrontend(req.URL), true
+}
+
+func (self *URLMapper) GetStored(url *url.URL) *url.URL {
+	if 0 == strings.Index(url.Path, "/bn/") {
+		return self.mapToArchiteStore(url)
+	}
+
+	if 0 == strings.Index(url.Path, "/b/") {
+		return self.mapToLivingStore(url)
+	}
+
+	// RSS for tDiary
+	if url.Path == "/index.rdf" || url.Path == "/no_comments.rdf" {
+		return self.mapToLivingStoreAtom()
+	}
+
+	// Anything else. Probably They are:
+	// - Assets and Atom for current blogs or
+	// - Some non-article pages.
+	return self.mapToLivingStore(url)
 }

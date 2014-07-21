@@ -18,15 +18,22 @@ var knownHeaderNames = []string{
 }
 
 type DirectServer struct {
+	cacher *Cacher
 }
 
 var servingPattern = regexp.MustCompile("(/$)|(\\.html$)|(\\.rdf$)|(\\.xml$)")
 
 func (self *DirectServer) ShouldServe(url *url.URL) bool {
-	return servingPattern.MatchString(url.Path)
+	return nil != url && servingPattern.MatchString(url.Path)
 }
 
 func (self *DirectServer) ServeHTTP(w http.ResponseWriter, r *http.Request, url *url.URL) {
+	cached := <-self.cacher.AskGet(url)
+	if nil != cached {
+		w.Write(cached.Body)
+		return
+	}
+
 	resp, err := http.Get(url.String())
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -50,8 +57,10 @@ func (self *DirectServer) ServeHTTP(w http.ResponseWriter, r *http.Request, url 
 	}
 
 	w.Write(bytes)
+
+	self.cacher.AskSet(url, &CacheEntry{Body: bytes, Head: h})
 }
 
-func MakeDirectServer() *DirectServer {
-	return &DirectServer{}
+func MakeDirectServer(cacher *Cacher) *DirectServer {
+	return &DirectServer{cacher: cacher}
 }
