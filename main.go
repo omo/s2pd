@@ -51,8 +51,9 @@ func (self *MainHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if self.direct.ShouldServe(pair.Stored) {
 		self.direct.ServeHTTP(w, r, pair.Stored)
 	} else {
-		http.Redirect(w, r, pair.Front.String(), http.StatusMovedPermanently)
-		LogAccessRedirect(r.URL, pair.Front)
+		u := pair.GetURLToRedirect()
+		http.Redirect(w, r, u.String(), http.StatusMovedPermanently)
+		LogAccessRedirect(r.URL, u)
 	}
 }
 
@@ -66,7 +67,7 @@ func main() {
 	mapper := &URLMapper{
 		Frontend:     MustParse(*kFrontend),
 		LivingStore:  MustParse(*kLiving),
-		ArchiteStore: MustParse(*kArchive),
+		ArchiveStore: MustParse(*kArchive),
 	}
 
 	cacher := MakeCacher()

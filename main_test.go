@@ -28,7 +28,7 @@ func makeTestMapper() *URLMapper {
 	return &URLMapper{
 		Frontend:     MustParse("http://front/"),
 		LivingStore:  MustParse("http://living.aws/"),
-		ArchiteStore: MustParse("http://archive.aws/"),
+		ArchiveStore: MustParse("http://archive.aws/"),
 	}
 }
 

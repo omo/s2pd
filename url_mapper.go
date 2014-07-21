@@ -13,12 +13,20 @@ type URLMapping struct {
 	Stored *url.URL
 }
 
+func (self *URLMapping) GetURLToRedirect() *url.URL {
+	if nil != self.Stored {
+		return self.Stored
+	}
+
+	return self.Front
+}
+
 // --- URLMappter ---
 
 type URLMapper struct {
 	Frontend     *url.URL
 	LivingStore  *url.URL
-	ArchiteStore *url.URL
+	ArchiveStore *url.URL
 }
 
 func (self *URLMapper) mapWithSamePathAt(url *url.URL, host *url.URL) *url.URL {
@@ -32,8 +40,8 @@ func (self *URLMapper) mapToLivingStore(url *url.URL) *url.URL {
 	return self.mapWithSamePathAt(url, self.LivingStore)
 }
 
-func (self *URLMapper) mapToArchiteStore(url *url.URL) *url.URL {
-	return self.mapWithSamePathAt(url, self.ArchiteStore)
+func (self *URLMapper) mapToArchiveStore(url *url.URL) *url.URL {
+	return self.mapWithSamePathAt(url, self.ArchiveStore)
 }
 
 func (self *URLMapper) mapToFrontend(url *url.URL) *url.URL {
@@ -66,32 +74,29 @@ func (self *URLMapper) GetMapping(req *http.Request) URLMapping {
 }
 
 func (self *URLMapper) GetFront(req *http.Request) (*url.URL, bool) {
-	// HTML for tDiary
 	values := req.URL.Query()
 	date, hasDate := values["date"]
-	if hasDate {
-		dateMatches := dateQueryPattern.FindStringSubmatch(date[0])
-		if nil == dateMatches {
-			return self.mapToFrontend(req.URL), true
-		}
-
-		path := fmt.Sprintf("/bn/%s/%s/%s/", dateMatches[1], dateMatches[2], dateMatches[3])
-		return &url.URL{
-			Scheme: self.Frontend.Scheme,
-			Host:   self.Frontend.Host,
-			Path:   path,
-		}, false
+	if !hasDate {
+		return self.mapToFrontend(req.URL), true
 	}
 
-	// Anything else. Probably They are:
-	// - Assets and Atom for current blogs or
-	// - Some non-article pages.
-	return self.mapToFrontend(req.URL), true
+	dateMatches := dateQueryPattern.FindStringSubmatch(date[0])
+	if nil == dateMatches {
+		return self.mapToFrontend(req.URL), true
+	}
+
+	// HTML for tDiary
+	path := fmt.Sprintf("/bn/%s/%s/%s/", dateMatches[1], dateMatches[2], dateMatches[3])
+	return &url.URL{
+		Scheme: self.Frontend.Scheme,
+		Host:   self.Frontend.Host,
+		Path:   path,
+	}, false
 }
 
 func (self *URLMapper) GetStored(url *url.URL) *url.URL {
 	if 0 == strings.Index(url.Path, "/bn/") {
-		return self.mapToArchiteStore(url)
+		return self.mapToArchiveStore(url)
 	}
 
 	if 0 == strings.Index(url.Path, "/b/") {
