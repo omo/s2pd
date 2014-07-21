@@ -27,38 +27,68 @@ func (self *DirectServer) ShouldServe(url *url.URL) bool {
 	return nil != url && servingPattern.MatchString(url.Path)
 }
 
-func (self *DirectServer) ServeHTTP(w http.ResponseWriter, r *http.Request, url *url.URL) {
+type DirectServerResponse struct {
+	statusCode int
+	head       http.Header
+	body       []byte
+}
+
+func (self *DirectServer) get(url *url.URL) (*DirectServerResponse, error) {
 	cached := <-self.cacher.AskGet(url)
 	if nil != cached {
-		w.Write(cached.Body)
-		return
+		return &DirectServerResponse{
+			statusCode: 200,
+			head:       cached.Head,
+			body:       cached.Body,
+		}, nil
 	}
 
 	resp, err := http.Get(url.String())
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	w.WriteHeader(resp.StatusCode)
-	h := w.Header()
-	for _, n := range knownHeaderNames {
-		val := resp.Header.Get(n)
-		if 0 < len(val) {
-			h.Add(n, val)
-		}
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if nil != err {
+		return nil, err
+	}
+
+	if resp.StatusCode == 200 {
+		self.cacher.AskSet(url, &CacheEntry{Body: bytes, Head: resp.Header})
+	}
+
+	return &DirectServerResponse{
+		statusCode: resp.StatusCode,
+		body:       bytes,
+		head:       resp.Header,
+	}, nil
+}
+
+func (self *DirectServer) ServeHTTP(w http.ResponseWriter, r *http.Request, url *url.URL) {
+	resp, err := self.get(url)
+	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	w.Write(bytes)
+	h := w.Header()
+	for _, n := range knownHeaderNames {
+		val := resp.head.Get(n)
+		if 0 < len(val) {
+			h.Add(n, val)
+		}
+	}
 
-	self.cacher.AskSet(url, &CacheEntry{Body: bytes, Head: h})
+	since := r.Header.Get("If-Modified-Since")
+	last := resp.head.Get("Last-Modified")
+	if 0 < len(last) && since == last && resp.statusCode == 200 {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+
+	w.WriteHeader(resp.statusCode)
+	w.Write(resp.body)
 }
 
 func MakeDirectServer(cacher *Cacher) *DirectServer {
