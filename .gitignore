@@ -1,1 +1,4 @@
 s2pd
+.vagrant
+venv
+*.pyc
