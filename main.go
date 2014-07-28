@@ -74,7 +74,7 @@ func main() {
 	direct := MakeDirectServer(cacher)
 
 	s := &http.Server{
-		Addr:           ":8090",
+		Addr:           ":8300",
 		Handler:        &MainHandler{mapper: mapper, direct: direct, cacher: cacher},
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
