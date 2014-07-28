@@ -18,17 +18,17 @@ def update():
     rebuild()
     run("mkdir -p " + PROJECT_DIR)
     with cd(PROJECT_DIR):
-        put("s2pd", "s2pd", mode=0755)
+        put("s2pd", "s2pd.fresh", mode=0755)
 
 def reload_daemons():
     with cd(PROJECT_DIR):
         with settings(warn_only=True):
             sudo("stop s2pd")
+        run("cp s2pd.fresh s2pd")
         run("mkdir -p " + PROJECT_DIR + "/logs")
-        put("confs/nginx.conf", "nginx.conf")
-        put("confs/upstart.conf", "upstart.conf")
-        sudo("cp nginx.conf /etc/nginx/sites-enabled/s2pd.conf")
-        sudo("cp upstart.conf /etc/init/s2pd.conf")
+        put("confs/nginx.conf", "/etc/nginx/sites-enabled/s2pd.conf", use_sudo=True)
+        put("confs/upstart.conf", "/etc/init/s2pd.conf", use_sudo=True)
+        put("confs/logrotate.conf", "/etc/logrotate.d/s2pd", use_sudo=True)
         sudo("/etc/init.d/nginx restart")
         sudo("start --verbose s2pd")
 

@@ -1,38 +1,25 @@
 
 
-# TODO
+# Deployment notes:
 
- * DONE: Making all redirect MVP
- * DONE: Making some pass-through
- * DONE: Caching
- * DONE: Support if-modified-since
- * DONE: Cache reset UI
- * DONE: Serve and cache CSS as well.
- * Flag for change the host name
- * Restart mode
+Basic idea:
 
-----
+ * The binary is built using local Vagrant box.
+ * Then the binary is pushed to prod using Fabric.
+ * The prod has nginx, logrotate, upstart as given.
 
-# Mapping rule
+Setup Vagrant:
 
-## Entries from tDiary:
+ * `Vagrantfile` does it for you.
+ * Don't forget to enable ssh forwarding agent.
+   * http://wildlyinaccurate.com/using-ssh-agent-forwarding-with-vagrant
 
-These should go to bn.dodgson.org.aws
+Setup prod:
 
- * steps.dodgson.org/?date=...
- * stepped.dodgson.org/?date...
- * dodgson.org/omo/t/?date=...
- * www.dodgson.org/omo/t/?date=...
+ * Not clear :-(
+ * Needs nginx, logrotate, upstart at least. (Hopefully that's all)
 
-These RDF thing should go to index.atom.
+Push:
 
- * index.rdf, no_comments.rdf
-
-## Other URLs
-
-These should go to steps.dodgson.org.aws
-
-## Cache
-
- * HTML files should be cached.
- * Ohter things should be just redirected.
+ * `vagrant up`.
+ * run `deploy_via_vagrant.sh`
