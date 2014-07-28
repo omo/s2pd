@@ -34,38 +34,38 @@ func makeTestMapper() *URLMapper {
 
 func TestMapFromTDiaryRequest(t *testing.T) {
 	mapper := makeTestMapper()
-	req := makeTestRequest("steps.dodgson.org", "/?date=20091231")
+	req := makeTestRequest("front", "/?date=20091231")
 	Expect(mapper.GetMapping(req).Front.String(), "http://front/bn/2009/12/31/", t)
 	ExpectTrue(mapper.GetMapping(req).Stored == nil, req.URL.String(), t)
 }
 
 func TestMapFromTDiaryAtomRequest(t *testing.T) {
 	mapper := makeTestMapper()
-	req := makeTestRequest("steps.dodgson.org", "/index.rdf")
+	req := makeTestRequest("front", "/index.rdf")
 	Expect(mapper.GetMapping(req).Stored.String(), "http://living.aws/atom.xml", t)
 }
 
 func TestMapFromOctopressRequest(t *testing.T) {
 	mapper := makeTestMapper()
-	req := makeTestRequest("steps.dodgson.org", "/b/2014/07/05/life-of-touch/")
+	req := makeTestRequest("front", "/b/2014/07/05/life-of-touch/")
 	Expect(mapper.GetMapping(req).Stored.String(), "http://living.aws/b/2014/07/05/life-of-touch/", t)
 }
 func TestMapFromOctopressImageRequest(t *testing.T) {
 	mapper := makeTestMapper()
-	req := makeTestRequest("steps.dodgson.org", "http://steps.dodgson.org/images/line-tile.png?1383981792")
+	req := makeTestRequest("front", "http://front/images/line-tile.png?1383981792")
 	Expect(mapper.GetMapping(req).Front.String(), "http://front/images/line-tile.png?1383981792", t)
 	Expect(mapper.GetMapping(req).Stored.String(), "http://living.aws/images/line-tile.png?1383981792", t)
 }
 
 func TestMapFromBacknumberRequest(t *testing.T) {
 	mapper := makeTestMapper()
-	req := makeTestRequest("steps.dodgson.org", "/bn/2011/11/04/")
+	req := makeTestRequest("front", "/bn/2011/11/04/")
 	Expect(mapper.GetMapping(req).Stored.String(), "http://archive.aws/bn/2011/11/04/", t)
 }
 
 func TestMapFromBacknumberAssetRequest(t *testing.T) {
 	mapper := makeTestMapper()
-	req := makeTestRequest("steps.dodgson.org", "/bn/stylesheets/style.css")
+	req := makeTestRequest("front", "/bn/stylesheets/style.css")
 	Expect(mapper.GetMapping(req).Stored.String(), "http://archive.aws/bn/stylesheets/style.css", t)
 }
 

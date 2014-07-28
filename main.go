@@ -27,23 +27,28 @@ type MainHandler struct {
 	cacher *Cacher
 }
 
+func (self *MainHandler) serveClear(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		w.WriteHeader(200)
+		w.Header().Add("Content-Type", "text/html")
+		io.WriteString(w,
+			"<!DOCTYPE html>\n<form method=POST><input type='submit' value='Clear Cache'></form>")
+	} else if r.Method == "POST" {
+		self.cacher.AskReset()
+		w.Header().Add("Content-Type", "text/plain")
+		w.WriteHeader(200)
+		io.WriteString(w, "OK")
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+
+	LogAccessMisc(r.URL)
+	return
+}
+
 func (self *MainHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/clear" {
-		if r.Method == "GET" {
-			w.WriteHeader(200)
-			w.Header().Add("Content-Type", "text/html")
-			io.WriteString(w,
-				"<!DOCTYPE html>\n<form method=POST><input type='submit' value='Clear Cache'></form>")
-		} else if r.Method == "POST" {
-			self.cacher.AskReset()
-			w.Header().Add("Content-Type", "text/plain")
-			w.WriteHeader(200)
-			io.WriteString(w, "OK")
-		} else {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-		}
-
-		LogAccessMisc(r.URL)
+		self.serveClear(w, r)
 		return
 	}
 
