@@ -39,6 +39,27 @@ func TestMapFromTDiaryRequest(t *testing.T) {
 	ExpectTrue(mapper.GetMapping(req).Stored == nil, req.URL.String(), t)
 }
 
+func TestMapppingShouldBeServedWithLiveDomain(t *testing.T) {
+	mapper := makeTestMapper()
+	req := makeTestRequest("front", "/")
+	Expect(mapper.GetMapping(req).Front.String(), "http://front/", t)
+	ExpectTrue(mapper.GetMapping(req).Stored != nil, req.URL.String(), t)
+}
+
+func TestMapppingShouldBeServedWithStagedDomain(t *testing.T) {
+	mapper := makeTestMapper()
+	req := makeTestRequest("s2p.flakiness.es", "/")
+	Expect(mapper.GetMapping(req).Front.String(), "http://front/", t)
+	ExpectTrue(mapper.GetMapping(req).Stored != nil, req.URL.String(), t)
+}
+
+func TestMapppingShouldBeRedirectedForNonLiveDomain(t *testing.T) {
+	mapper := makeTestMapper()
+	req := makeTestRequest("old.front", "/")
+	Expect(mapper.GetMapping(req).Front.String(), "http://front/", t)
+	ExpectTrue(mapper.GetMapping(req).Stored == nil, req.URL.String(), t)
+}
+
 func TestMapFromTDiaryAtomRequest(t *testing.T) {
 	mapper := makeTestMapper()
 	req := makeTestRequest("front", "/index.rdf")

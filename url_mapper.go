@@ -56,6 +56,21 @@ func (self *URLMapper) mapToLivingStoreAtom() *url.URL {
 	}
 }
 
+// TODO(morrita): Should be configurable (theoretically.)
+var frontHostWhitelist = map[string]bool{
+	"s2p.flakiness.es": true,
+	"localhost":        true,
+}
+
+func (self *URLMapper) GetMapping(req *http.Request) URLMapping {
+	mapping := self.getMappingFromPath(req)
+	if mapping.Front.Host != req.Host && !frontHostWhitelist[req.Host] {
+		return URLMapping{Front: mapping.Front, Stored: nil}
+	}
+
+	return mapping
+}
+
 var dateQueryPattern = regexp.MustCompile("([[:digit:]]{4})([[:digit:]]{2})([[:digit:]]{2})")
 
 //
@@ -63,7 +78,7 @@ var dateQueryPattern = regexp.MustCompile("([[:digit:]]{4})([[:digit:]]{2})([[:d
 // - RSS for backnumbers (There is nothing new coming)
 // - Assets for tDiary (We support only linked pages and old RSS readers.)
 //
-func (self *URLMapper) GetMapping(req *http.Request) URLMapping {
+func (self *URLMapper) getMappingFromPath(req *http.Request) URLMapping {
 	front, can_be_stored := self.GetFront(req)
 	if !can_be_stored {
 		return URLMapping{Front: front, Stored: nil}
