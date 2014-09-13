@@ -26,7 +26,7 @@ def reload_daemons():
             sudo("stop s2pd")
         run("cp s2pd.fresh s2pd")
         run("mkdir -p " + PROJECT_DIR + "/logs")
-        put("confs/nginx.conf", "/etc/nginx/sites-enabled/s2pd.conf", use_sudo=True)
+        put("confs/nginx.conf", "/etc/nginx/sites-enabled/02s2pd.conf", use_sudo=True)
         put("confs/upstart.conf", "/etc/init/s2pd.conf", use_sudo=True)
         put("confs/logrotate.conf", "/etc/logrotate.d/s2pd", use_sudo=True)
         sudo("/etc/init.d/nginx restart")

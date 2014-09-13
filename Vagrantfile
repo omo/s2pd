@@ -57,6 +57,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #
   # View the documentation for the provider you're using for more
   # information on available options.
+  config.vm.provider "virtualbox" do |vb|
+    # See https://github.com/mitchellh/vagrant/issues/1126
+    #     https://docs.vagrantup.com/v2/virtualbox/configuration.html
+    vb.name = "s2pd"
+  end
 
   # Enable provisioning with CFEngine. CFEngine Community packages are
   # automatically installed. For example, configure the host as a
