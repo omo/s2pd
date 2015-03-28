@@ -7,6 +7,4 @@ hosted at Amazon S3 backend.
 
 Why do I need this? I have some old links to redirect, and I don't want to learn
 DSL for proper reverse proxy servers. Also, I was looking for a justification to
-write some server in Go language, and this perfectly fit it.
-
-
+write some server in Go language and this perfectly fits to the desire.
