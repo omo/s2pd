@@ -27,7 +27,7 @@ func makeTestRequest(host string, path string) *http.Request {
 func makeTestMapper() *URLMapper {
 	return &URLMapper{
 		Frontend:     MustParse("http://front/"),
-		LivingStore:  MustParse("http://living.aws/"),
+		LastStore: MustParse("http://last.aws/"),
 		ArchiveStore: MustParse("http://archive.aws/"),
 	}
 }
@@ -63,19 +63,19 @@ func TestMapppingShouldBeRedirectedForNonLiveDomain(t *testing.T) {
 func TestMapFromTDiaryAtomRequest(t *testing.T) {
 	mapper := makeTestMapper()
 	req := makeTestRequest("front", "/index.rdf")
-	Expect(mapper.GetMapping(req).Stored.String(), "http://living.aws/atom.xml", t)
+	Expect(mapper.GetMapping(req).Stored.String(), "http://last.aws/atom.xml", t)
 }
 
 func TestMapFromOctopressRequest(t *testing.T) {
 	mapper := makeTestMapper()
 	req := makeTestRequest("front", "/b/2014/07/05/life-of-touch/")
-	Expect(mapper.GetMapping(req).Stored.String(), "http://living.aws/b/2014/07/05/life-of-touch/", t)
+	Expect(mapper.GetMapping(req).Stored.String(), "http://last.aws/b/2014/07/05/life-of-touch/", t)
 }
 func TestMapFromOctopressImageRequest(t *testing.T) {
 	mapper := makeTestMapper()
 	req := makeTestRequest("front", "http://front/images/line-tile.png?1383981792")
 	Expect(mapper.GetMapping(req).Front.String(), "http://front/images/line-tile.png?1383981792", t)
-	Expect(mapper.GetMapping(req).Stored.String(), "http://living.aws/images/line-tile.png?1383981792", t)
+	Expect(mapper.GetMapping(req).Stored.String(), "http://last.aws/images/line-tile.png?1383981792", t)
 }
 
 func TestMapFromBacknumberRequest(t *testing.T) {

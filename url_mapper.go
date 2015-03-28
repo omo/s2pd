@@ -25,7 +25,7 @@ func (self *URLMapping) GetURLToRedirect() *url.URL {
 
 type URLMapper struct {
 	Frontend     *url.URL
-	LivingStore  *url.URL
+	LastStore *url.URL
 	ArchiveStore *url.URL
 }
 
@@ -36,8 +36,8 @@ func (self *URLMapper) mapWithSamePathAt(url *url.URL, host *url.URL) *url.URL {
 	return &urlToReturn
 }
 
-func (self *URLMapper) mapToLivingStore(url *url.URL) *url.URL {
-	return self.mapWithSamePathAt(url, self.LivingStore)
+func (self *URLMapper) mapToLastStore(url *url.URL) *url.URL {
+	return self.mapWithSamePathAt(url, self.LastStore)
 }
 
 func (self *URLMapper) mapToArchiveStore(url *url.URL) *url.URL {
@@ -48,10 +48,10 @@ func (self *URLMapper) mapToFrontend(url *url.URL) *url.URL {
 	return self.mapWithSamePathAt(url, self.Frontend)
 }
 
-func (self *URLMapper) mapToLivingStoreAtom() *url.URL {
+func (self *URLMapper) mapToLastStoreAtom() *url.URL {
 	return &url.URL{
-		Scheme: self.LivingStore.Scheme,
-		Host:   self.LivingStore.Host,
+		Scheme: self.LastStore.Scheme,
+		Host:   self.LastStore.Host,
 		Path:   "/atom.xml",
 	}
 }
@@ -60,6 +60,7 @@ func (self *URLMapper) mapToLivingStoreAtom() *url.URL {
 var frontHostWhitelist = map[string]bool{
 	"s2p.flakiness.es": true,
 	"localhost":        true,
+	"localhost:8300":   true,
 }
 
 func (self *URLMapper) GetMapping(req *http.Request) URLMapping {
@@ -115,16 +116,16 @@ func (self *URLMapper) GetStored(url *url.URL) *url.URL {
 	}
 
 	if 0 == strings.Index(url.Path, "/b/") {
-		return self.mapToLivingStore(url)
+		return self.mapToLastStore(url)
 	}
 
 	// RSS for tDiary
 	if url.Path == "/index.rdf" || url.Path == "/no_comments.rdf" {
-		return self.mapToLivingStoreAtom()
+		return self.mapToLastStoreAtom()
 	}
 
 	// Anything else. Probably They are:
 	// - Assets and Atom for current blogs or
 	// - Some non-article pages.
-	return self.mapToLivingStore(url)
+	return self.mapToLastStore(url)
 }
