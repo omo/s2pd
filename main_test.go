@@ -26,6 +26,7 @@ func makeTestRequest(host string, path string) *http.Request {
 
 func makeTestMapper() *URLMapper {
 	return &URLMapper{
+		Active: MustParse("http://active/"),
 		Frontend:     MustParse("http://front/"),
 		LastStore: MustParse("http://last.aws/"),
 		ArchiveStore: MustParse("http://archive.aws/"),
@@ -63,7 +64,13 @@ func TestMapppingShouldBeRedirectedForNonLiveDomain(t *testing.T) {
 func TestMapFromTDiaryAtomRequest(t *testing.T) {
 	mapper := makeTestMapper()
 	req := makeTestRequest("front", "/index.rdf")
-	Expect(mapper.GetMapping(req).Stored.String(), "http://last.aws/atom.xml", t)
+	Expect(mapper.GetMapping(req).Stored.String(), "http://active/index.xml", t)
+}
+
+func TestMapLastAtomRequest(t *testing.T) {
+	mapper := makeTestMapper()
+	req := makeTestRequest("front", "/atom.xml")
+	Expect(mapper.GetMapping(req).Stored.String(), "http://active/index.xml", t)
 }
 
 func TestMapFromOctopressRequest(t *testing.T) {

@@ -24,6 +24,7 @@ func (self *URLMapping) GetURLToRedirect() *url.URL {
 // --- URLMappter ---
 
 type URLMapper struct {
+	Active *url.URL
 	Frontend     *url.URL
 	LastStore *url.URL
 	ArchiveStore *url.URL
@@ -48,11 +49,11 @@ func (self *URLMapper) mapToFrontend(url *url.URL) *url.URL {
 	return self.mapWithSamePathAt(url, self.Frontend)
 }
 
-func (self *URLMapper) mapToLastStoreAtom() *url.URL {
+func (self *URLMapper) mapToActiveStoreAtom() *url.URL {
 	return &url.URL{
-		Scheme: self.LastStore.Scheme,
-		Host:   self.LastStore.Host,
-		Path:   "/atom.xml",
+		Scheme: self.Active.Scheme,
+		Host:   self.Active.Host,
+		Path:   "/index.xml",
 	}
 }
 
@@ -119,9 +120,9 @@ func (self *URLMapper) GetStored(url *url.URL) *url.URL {
 		return self.mapToLastStore(url)
 	}
 
-	// RSS for tDiary
-	if url.Path == "/index.rdf" || url.Path == "/no_comments.rdf" {
-		return self.mapToLastStoreAtom()
+	// RSS and Atom
+	if url.Path == "/atom.xml" || url.Path == "/index.rdf" || url.Path == "/no_comments.rdf" {
+		return self.mapToActiveStoreAtom()
 	}
 
 	// Anything else. Probably They are:

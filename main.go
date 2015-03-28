@@ -62,14 +62,16 @@ func (self *MainHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var kFrontend = flag.String("frontend", "http://steps.dodgson.org/", "Frontend URL")
-var kLast = flag.String("Last", "http://blog.dodgson.org.s3-website-us-east-1.amazonaws.com/", "Active Blog CDN URL")
+var kActive = flag.String("active", "http://anemone.dodgson.org/", "Active Blog URL")
+var kFrontend = flag.String("frontend", "http://steps.dodgson.org/", "(Last) Frontend URL")
+var kLast = flag.String("Last", "http://blog.dodgson.org.s3-website-us-east-1.amazonaws.com/", "Last Blog CDN URL")
 var kArchive = flag.String("archive", "http://bn.dodgson.org.s3-website-us-east-1.amazonaws.com/", "Old Blog CDN URL")
 
 func main() {
 	flag.Parse()
 
 	mapper := &URLMapper{
+		Active: MustParse(*kActive),
 		Frontend:     MustParse(*kFrontend),
 		LastStore:  MustParse(*kLast),
 		ArchiveStore: MustParse(*kArchive),
