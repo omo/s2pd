@@ -41,22 +41,22 @@ func TestMapFromTDiaryRequest(t *testing.T) {
 
 func TestMapppingShouldBeServedWithLiveDomain(t *testing.T) {
 	mapper := makeTestMapper()
-	req := makeTestRequest("front", "/")
-	Expect(mapper.GetMapping(req).Front.String(), "http://front/", t)
-	ExpectTrue(mapper.GetMapping(req).Stored != nil, req.URL.String(), t)
+	req := makeTestRequest("front", "/foo/")
+	Expect(mapper.GetMapping(req).Front.String(), "http://front/foo/", t)
+	Expect(mapper.GetMapping(req).Stored.String(), "http://last.aws/foo/", t)
 }
 
 func TestMapppingShouldBeServedWithStagedDomain(t *testing.T) {
 	mapper := makeTestMapper()
-	req := makeTestRequest("s2p.flakiness.es", "/")
-	Expect(mapper.GetMapping(req).Front.String(), "http://front/", t)
-	ExpectTrue(mapper.GetMapping(req).Stored != nil, req.URL.String(), t)
+	req := makeTestRequest("s2p.flakiness.es", "/foo/")
+	Expect(mapper.GetMapping(req).Front.String(), "http://front/foo/", t)
+	Expect(mapper.GetMapping(req).Stored.String(), "http://last.aws/foo/", t)
 }
 
 func TestMapppingShouldBeRedirectedForNonLiveDomain(t *testing.T) {
 	mapper := makeTestMapper()
-	req := makeTestRequest("old.front", "/")
-	Expect(mapper.GetMapping(req).Front.String(), "http://front/", t)
+	req := makeTestRequest("old.front", "/foo/")
+	Expect(mapper.GetMapping(req).Front.String(), "http://front/foo/", t)
 	ExpectTrue(mapper.GetMapping(req).Stored == nil, req.URL.String(), t)
 }
 
